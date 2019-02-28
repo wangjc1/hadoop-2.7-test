@@ -292,7 +292,7 @@ hadoop2.0已经发布了稳定版本了，增加了很多特性，比如HDFS HA�
     cd /home/hadoop/app/hadoop-2.4.1/etc/hadoop
 		
 ###### 3.2.1修改hadoo-env.sh
-			export JAVA_HOME=/home/hadoop/app/jdk1.7.0_55
+    export JAVA_HOME=/home/hadoop/app/jdk1.7.0_55
 			
 ###### 3.2.2修改core-site.xml
     <configuration>
