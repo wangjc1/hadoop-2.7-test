@@ -250,246 +250,247 @@ hadoop2.0已经发布了稳定版本了，增加了很多特性，比如HDFS HA�
 
 
 #### 2. 安装配置zooekeeper集群（在weekend05上）
-	2.1解压
-		tar -zxvf zookeeper-3.4.5.tar.gz -C /weekend/
-	2.2修改配置
-		cd /weekend/zookeeper-3.4.5/conf/
-		cp zoo_sample.cfg zoo.cfg
-		vim zoo.cfg
-		修改：dataDir=/weekend/zookeeper-3.4.5/tmp
-		在最后添加：
-		server.1=weekend05:2888:3888
-		server.2=weekend06:2888:3888
-		server.3=weekend07:2888:3888
-		保存退出
-		然后创建一个tmp文件夹
-		mkdir /weekend/zookeeper-3.4.5/tmp
-		再创建一个空文件
-		touch /weekend/zookeeper-3.4.5/tmp/myid
-		最后向该文件写入ID
-		echo 1 > /weekend/zookeeper-3.4.5/tmp/myid
-	2.3将配置好的zookeeper拷贝到其他节点(首先分别在weekend06、weekend07根目录下创建一个weekend目录：mkdir /weekend)
-		scp -r /weekend/zookeeper-3.4.5/ weekend06:/weekend/
-		scp -r /weekend/zookeeper-3.4.5/ weekend07:/weekend/
-		
-		注意：修改weekend06、weekend07对应/weekend/zookeeper-3.4.5/tmp/myid内容
-		weekend06：
-			echo 2 > /weekend/zookeeper-3.4.5/tmp/myid
-		weekend07：
-			echo 3 > /weekend/zookeeper-3.4.5/tmp/myid
+    2.1解压
+        tar -zxvf zookeeper-3.4.5.tar.gz -C /weekend/
+    2.2修改配置
+        cd /weekend/zookeeper-3.4.5/conf/
+        cp zoo_sample.cfg zoo.cfg
+        vim zoo.cfg
+        修改：dataDir=/weekend/zookeeper-3.4.5/tmp
+        在最后添加：
+        server.1=weekend05:2888:3888
+        server.2=weekend06:2888:3888
+        server.3=weekend07:2888:3888
+        保存退出
+        然后创建一个tmp文件夹
+        mkdir /weekend/zookeeper-3.4.5/tmp
+        再创建一个空文件
+        touch /weekend/zookeeper-3.4.5/tmp/myid
+        最后向该文件写入ID
+        echo 1 > /weekend/zookeeper-3.4.5/tmp/myid
+    2.3将配置好的zookeeper拷贝到其他节点(首先分别在weekend06、weekend07根目录下创建一个weekend目录：mkdir /weekend)
+        scp -r /weekend/zookeeper-3.4.5/ weekend06:/weekend/
+        scp -r /weekend/zookeeper-3.4.5/ weekend07:/weekend/
+        
+        注意：修改weekend06、weekend07对应/weekend/zookeeper-3.4.5/tmp/myid内容
+        weekend06：
+            echo 2 > /weekend/zookeeper-3.4.5/tmp/myid
+        weekend07：
+            echo 3 > /weekend/zookeeper-3.4.5/tmp/myid
 
 #### 3.安装配置hadoop集群（在weekend01上操作）
 ##### 3.1解压
 		tar -zxvf hadoop-2.4.1.tar.gz -C /weekend/
 ##### 3.2配置HDFS（hadoop2.0所有的配置文件都在$HADOOP_HOME/etc/hadoop目录下）
-		#将hadoop添加到环境变量中
-		vim /etc/profile
-		export JAVA_HOME=/usr/java/jdk1.7.0_55
-		export HADOOP_HOME=/weekend/hadoop-2.4.1
-		export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin
-		
-		#hadoop2.0的配置文件全部在$HADOOP_HOME/etc/hadoop下
-		cd /home/hadoop/app/hadoop-2.4.1/etc/hadoop
+    #将hadoop添加到环境变量中
+    vim /etc/profile
+    export JAVA_HOME=/usr/java/jdk1.7.0_55
+    export HADOOP_HOME=/weekend/hadoop-2.4.1
+    export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin
+    
+    #hadoop2.0的配置文件全部在$HADOOP_HOME/etc/hadoop下
+    cd /home/hadoop/app/hadoop-2.4.1/etc/hadoop
 		
 ###### 3.2.1修改hadoo-env.sh
 			export JAVA_HOME=/home/hadoop/app/jdk1.7.0_55
 			
 ###### 3.2.2修改core-site.xml
-			<configuration>
-				<!-- 指定hdfs的nameservice为ns1 -->
-				<property>
-					<name>fs.defaultFS</name>
-					<value>hdfs://ns1/</value>
-				</property>
-				<!-- 指定hadoop临时目录 -->
-				<property>
-					<name>hadoop.tmp.dir</name>
-					<value>/home/hadoop/app/hadoop-2.4.1/tmp</value>
-				</property>
-				
-				<!-- 指定zookeeper地址 -->
-				<property>
-					<name>ha.zookeeper.quorum</name>
-					<value>weekend05:2181,weekend06:2181,weekend07:2181</value>
-				</property>
-			</configuration>
+    <configuration>
+        <!-- 指定hdfs的nameservice为ns1 -->
+        <property>
+            <name>fs.defaultFS</name>
+            <value>hdfs://ns1/</value>
+        </property>
+        <!-- 指定hadoop临时目录 -->
+        <property>
+            <name>hadoop.tmp.dir</name>
+            <value>/home/hadoop/app/hadoop-2.4.1/tmp</value>
+        </property>
+        
+        <!-- 指定zookeeper地址 -->
+        <property>
+            <name>ha.zookeeper.quorum</name>
+            <value>weekend05:2181,weekend06:2181,weekend07:2181</value>
+        </property>
+    </configuration>
 			
 ###### 3.2.3修改hdfs-site.xml
-			<configuration>
-				<!--指定hdfs的nameservice为ns1，需要和core-site.xml中的保持一致 -->
-				<property>
-					<name>dfs.nameservices</name>
-					<value>ns1</value>
-				</property>
-				<!-- ns1下面有两个NameNode，分别是nn1，nn2 -->
-				<property>
-					<name>dfs.ha.namenodes.ns1</name>
-					<value>nn1,nn2</value>
-				</property>
-				<!-- nn1的RPC通信地址 -->
-				<property>
-					<name>dfs.namenode.rpc-address.ns1.nn1</name>
-					<value>weekend01:9000</value>
-				</property>
-				<!-- nn1的http通信地址 -->
-				<property>
-					<name>dfs.namenode.http-address.ns1.nn1</name>
-					<value>weekend01:50070</value>
-				</property>
-				<!-- nn2的RPC通信地址 -->
-				<property>
-					<name>dfs.namenode.rpc-address.ns1.nn2</name>
-					<value>weekend02:9000</value>
-				</property>
-				<!-- nn2的http通信地址 -->
-				<property>
-					<name>dfs.namenode.http-address.ns1.nn2</name>
-					<value>weekend02:50070</value>
-				</property>
-				<!-- 指定NameNode的元数据在JournalNode上的存放位置 -->
-				<property>
-					<name>dfs.namenode.shared.edits.dir</name>
-					<value>qjournal://weekend05:8485;weekend06:8485;weekend07:8485/ns1</value>
-				</property>
-				<!-- 指定JournalNode在本地磁盘存放数据的位置 -->
-				<property>
-					<name>dfs.journalnode.edits.dir</name>
-					<value>/home/hadoop/app/hadoop-2.4.1/journaldata</value>
-				</property>
-				<!-- 开启NameNode失败自动切换 -->
-				<property>
-					<name>dfs.ha.automatic-failover.enabled</name>
-					<value>true</value>
-				</property>
-				<!-- 配置失败自动切换实现方式 -->
-				<property>
-					<name>dfs.client.failover.proxy.provider.ns1</name>
-					<value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
-				</property>
-				<!-- 配置隔离机制方法，多个机制用换行分割，即每个机制暂用一行-->
-				<property>
-					<name>dfs.ha.fencing.methods</name>
-					<value>
-						sshfence
-						shell(/bin/true)
-					</value>
-				</property>
-				<!-- 使用sshfence隔离机制时需要ssh免登陆 -->
-				<property>
-					<name>dfs.ha.fencing.ssh.private-key-files</name>
-					<value>/home/hadoop/.ssh/id_rsa</value>
-				</property>
-				<!-- 配置sshfence隔离机制超时时间 -->
-				<property>
-					<name>dfs.ha.fencing.ssh.connect-timeout</name>
-					<value>30000</value>
-				</property>
-			</configuration>
+    <configuration>
+        <!--指定hdfs的nameservice为ns1，需要和core-site.xml中的保持一致 -->
+        <property>
+            <name>dfs.nameservices</name>
+            <value>ns1</value>
+        </property>
+        <!-- ns1下面有两个NameNode，分别是nn1，nn2 -->
+        <property>
+            <name>dfs.ha.namenodes.ns1</name>
+            <value>nn1,nn2</value>
+        </property>
+        <!-- nn1的RPC通信地址 -->
+        <property>
+            <name>dfs.namenode.rpc-address.ns1.nn1</name>
+            <value>weekend01:9000</value>
+        </property>
+        <!-- nn1的http通信地址 -->
+        <property>
+            <name>dfs.namenode.http-address.ns1.nn1</name>
+            <value>weekend01:50070</value>
+        </property>
+        <!-- nn2的RPC通信地址 -->
+        <property>
+            <name>dfs.namenode.rpc-address.ns1.nn2</name>
+            <value>weekend02:9000</value>
+        </property>
+        <!-- nn2的http通信地址 -->
+        <property>
+            <name>dfs.namenode.http-address.ns1.nn2</name>
+            <value>weekend02:50070</value>
+        </property>
+        <!-- 指定NameNode的元数据在JournalNode上的存放位置 -->
+        <property>
+            <name>dfs.namenode.shared.edits.dir</name>
+            <value>qjournal://weekend05:8485;weekend06:8485;weekend07:8485/ns1</value>
+        </property>
+        <!-- 指定JournalNode在本地磁盘存放数据的位置 -->
+        <property>
+            <name>dfs.journalnode.edits.dir</name>
+            <value>/home/hadoop/app/hadoop-2.4.1/journaldata</value>
+        </property>
+        <!-- 开启NameNode失败自动切换 -->
+        <property>
+            <name>dfs.ha.automatic-failover.enabled</name>
+            <value>true</value>
+        </property>
+        <!-- 配置失败自动切换实现方式 -->
+        <property>
+            <name>dfs.client.failover.proxy.provider.ns1</name>
+            <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+        </property>
+        <!-- 配置隔离机制方法，多个机制用换行分割，即每个机制暂用一行-->
+        <property>
+            <name>dfs.ha.fencing.methods</name>
+            <value>
+                sshfence
+                shell(/bin/true)
+            </value>
+        </property>
+        <!-- 使用sshfence隔离机制时需要ssh免登陆 -->
+        <property>
+            <name>dfs.ha.fencing.ssh.private-key-files</name>
+            <value>/home/hadoop/.ssh/id_rsa</value>
+        </property>
+        <!-- 配置sshfence隔离机制超时时间 -->
+        <property>
+            <name>dfs.ha.fencing.ssh.connect-timeout</name>
+            <value>30000</value>
+        </property>
+    </configuration>
 		
 ###### 3.2.4修改mapred-site.xml
-			<configuration>
-				<!-- 指定mr框架为yarn方式 -->
-				<property>
-					<name>mapreduce.framework.name</name>
-					<value>yarn</value>
-				</property>
-			</configuration>	
+    <configuration>
+        <!-- 指定mr框架为yarn方式 -->
+        <property>
+            <name>mapreduce.framework.name</name>
+            <value>yarn</value>
+        </property>
+    </configuration>	
 		
 ###### 3.2.5修改yarn-site.xml
-			<configuration>
-					<!-- 开启RM高可用 -->
-					<property>
-					   <name>yarn.resourcemanager.ha.enabled</name>
-					   <value>true</value>
-					</property>
-					<!-- 指定RM的cluster id -->
-					<property>
-					   <name>yarn.resourcemanager.cluster-id</name>
-					   <value>yrc</value>
-					</property>
-					<!-- 指定RM的名字 -->
-					<property>
-					   <name>yarn.resourcemanager.ha.rm-ids</name>
-					   <value>rm1,rm2</value>
-					</property>
-					<!-- 分别指定RM的地址 -->
-					<property>
-					   <name>yarn.resourcemanager.hostname.rm1</name>
-					   <value>weekend03</value>
-					</property>
-					<property>
-					   <name>yarn.resourcemanager.hostname.rm2</name>
-					   <value>weekend04</value>
-					</property>
-					<!-- 指定zk集群地址 -->
-					<property>
-					   <name>yarn.resourcemanager.zk-address</name>
-					   <value>weekend05:2181,weekend06:2181,weekend07:2181</value>
-					</property>
-					<property>
-					   <name>yarn.nodemanager.aux-services</name>
-					   <value>mapreduce_shuffle</value>
-					</property>
-			</configuration>
+    <configuration>
+            <!-- 开启RM高可用 -->
+            <property>
+               <name>yarn.resourcemanager.ha.enabled</name>
+               <value>true</value>
+            </property>
+            <!-- 指定RM的cluster id -->
+            <property>
+               <name>yarn.resourcemanager.cluster-id</name>
+               <value>yrc</value>
+            </property>
+            <!-- 指定RM的名字 -->
+            <property>
+               <name>yarn.resourcemanager.ha.rm-ids</name>
+               <value>rm1,rm2</value>
+            </property>
+            <!-- 分别指定RM的地址 -->
+            <property>
+               <name>yarn.resourcemanager.hostname.rm1</name>
+               <value>weekend03</value>
+            </property>
+            <property>
+               <name>yarn.resourcemanager.hostname.rm2</name>
+               <value>weekend04</value>
+            </property>
+            <!-- 指定zk集群地址 -->
+            <property>
+               <name>yarn.resourcemanager.zk-address</name>
+               <value>weekend05:2181,weekend06:2181,weekend07:2181</value>
+            </property>
+            <property>
+               <name>yarn.nodemanager.aux-services</name>
+               <value>mapreduce_shuffle</value>
+            </property>
+    </configuration>
 		
 			
 ###### 3.2.6修改slaves(slaves是指定子节点的位置，因为要在weekend01上启动HDFS、在weekend03启动yarn，所以weekend01上的slaves文件指定的是datanode的位置，weekend03上的slaves文件指定的是nodemanager的位置)
-			weekend05
-			weekend06
-			weekend07
+    weekend05
+    weekend06
+    weekend07
 
 ###### 3.2.7配置免密码登陆
-			#首先要配置weekend01到weekend02、weekend03、weekend04、weekend05、weekend06、weekend07的免密码登陆
-			#在weekend01上生产一对钥匙
-			ssh-keygen -t rsa
-			#将公钥拷贝到其他节点，包括自己
-			ssh-coyp-id weekend01
-			ssh-coyp-id weekend02
-			ssh-coyp-id weekend03
-			ssh-coyp-id weekend04
-			ssh-coyp-id weekend05
-			ssh-coyp-id weekend06
-			ssh-coyp-id weekend07
-			#配置weekend03到weekend04、weekend05、weekend06、weekend07的免密码登陆
-			#在weekend03上生产一对钥匙
-			ssh-keygen -t rsa
-			#将公钥拷贝到其他节点
-			ssh-coyp-id weekend04
-			ssh-coyp-id weekend05
-			ssh-coyp-id weekend06
-			ssh-coyp-id weekend07
-			#注意：两个namenode之间要配置ssh免密码登陆，别忘了配置weekend02到weekend01的免登陆
-			在weekend02上生产一对钥匙
-			ssh-keygen -t rsa
-			ssh-coyp-id -i weekend01				
+    #首先要配置weekend01到weekend02、weekend03、weekend04、weekend05、weekend06、weekend07的免密码登陆
+    #在weekend01上生产一对钥匙
+    ssh-keygen -t rsa
+    #将公钥拷贝到其他节点，包括自己
+    ssh-coyp-id weekend01
+    ssh-coyp-id weekend02
+    ssh-coyp-id weekend03
+    ssh-coyp-id weekend04
+    ssh-coyp-id weekend05
+    ssh-coyp-id weekend06
+    ssh-coyp-id weekend07
+    #配置weekend03到weekend04、weekend05、weekend06、weekend07的免密码登陆
+    #在weekend03上生产一对钥匙
+    ssh-keygen -t rsa
+    #将公钥拷贝到其他节点
+    ssh-coyp-id weekend04
+    ssh-coyp-id weekend05
+    ssh-coyp-id weekend06
+    ssh-coyp-id weekend07
+    #注意：两个namenode之间要配置ssh免密码登陆，别忘了配置weekend02到weekend01的免登陆
+    在weekend02上生产一对钥匙
+    ssh-keygen -t rsa
+    ssh-coyp-id -i weekend01				
 	
 ##### 3.4将配置好的hadoop拷贝到其他节点
-		scp -r /weekend/ weekend02:/
-		scp -r /weekend/ weekend03:/
-		scp -r /weekend/hadoop-2.4.1/ hadoop@weekend04:/weekend/
-		scp -r /weekend/hadoop-2.4.1/ hadoop@weekend05:/weekend/
-		scp -r /weekend/hadoop-2.4.1/ hadoop@weekend06:/weekend/
-		scp -r /weekend/hadoop-2.4.1/ hadoop@weekend07:/weekend/
-	###注意：严格按照下面的步骤
+    scp -r /weekend/ weekend02:/
+    scp -r /weekend/ weekend03:/
+    scp -r /weekend/hadoop-2.4.1/ hadoop@weekend04:/weekend/
+    scp -r /weekend/hadoop-2.4.1/ hadoop@weekend05:/weekend/
+    scp -r /weekend/hadoop-2.4.1/ hadoop@weekend06:/weekend/
+    scp -r /weekend/hadoop-2.4.1/ hadoop@weekend07:/weekend/
+
+###注意：严格按照下面的步骤
 ##### 3.5启动zookeeper集群（分别在weekend05、weekend06、tcast07上启动zk）
-		cd /weekend/zookeeper-3.4.5/bin/
-		./zkServer.sh start
-		#查看状态：一个leader，两个follower
-		./zkServer.sh status
+    cd /weekend/zookeeper-3.4.5/bin/
+    ./zkServer.sh start
+    #查看状态：一个leader，两个follower
+    ./zkServer.sh status
 		
 ##### 3.6启动journalnode（分别在在weekend05、weekend06、tcast07上执行）
-		cd /weekend/hadoop-2.4.1
-		sbin/hadoop-daemon.sh start journalnode
-		#运行jps命令检验，weekend05、weekend06、weekend07上多了JournalNode进程
-		这个命令在hadoop2.7.7上试验，无法启动其他集群节点journalnode
+    cd /weekend/hadoop-2.4.1
+    sbin/hadoop-daemon.sh start journalnode
+    #运行jps命令检验，weekend05、weekend06、weekend07上多了JournalNode进程
+    这个命令在hadoop2.7.7上试验，无法启动其他集群节点journalnode
 	
 ##### 3.7格式化HDFS
-		#在weekend01上执行命令:
-		hdfs namenode -format
-		#格式化后会在根据core-site.xml中的hadoop.tmp.dir配置生成个文件，这里我配置的是/weekend/hadoop-2.4.1/tmp，然后将/weekend/hadoop-2.4.1/tmp拷贝到weekend02的/weekend/hadoop-2.4.1/下。
-		scp -r tmp/ weekend02:/home/hadoop/app/hadoop-2.4.1/
-		##也可以这样，建议
-		hdfs namenode -bootstrapStandby
+    #在weekend01上执行命令:
+    hdfs namenode -format
+    #格式化后会在根据core-site.xml中的hadoop.tmp.dir配置生成个文件，这里我配置的是/weekend/hadoop-2.4.1/tmp，然后将/weekend/hadoop-2.4.1/tmp拷贝到weekend02的/weekend/hadoop-2.4.1/下。
+    scp -r tmp/ weekend02:/home/hadoop/app/hadoop-2.4.1/
+    ##也可以这样，建议
+    hdfs namenode -bootstrapStandby
 	
 ##### 3.8格式化ZKFC(在weekend01上执行即可)
     hdfs zkfc -formatZK
