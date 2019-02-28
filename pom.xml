@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.hadoop</groupId>
-    <artifactId>hadoop-2.7</artifactId>
+    <artifactId>hadoop-2.7-test</artifactId>
     <version>2.7.7</version>
 
     <dependencies>
