@@ -502,14 +502,14 @@ hadoop2.0已经发布了稳定版本了，增加了很多特性，比如HDFS HA�
 	sbin/start-yarn.sh
 
 	
-#### 到此，hadoop-2.4.1配置完毕，可以统计浏览器访问:
+##### 到此，hadoop-2.4.1配置完毕，可以统计浏览器访问:
 	http://192.168.1.201:50070
 	NameNode 'weekend01:9000' (active)
 	
 	http://192.168.1.202:50070
 	NameNode 'weekend02:9000' (standby)
 
-#### 验证HDFS HA
+##### 验证HDFS HA
 	首先向hdfs上传一个文件
 	hadoop fs -put /etc/profile /profile
 	hadoop fs -ls /
@@ -529,21 +529,34 @@ hadoop2.0已经发布了稳定版本了，增加了很多特性，比如HDFS HA�
 	通过浏览器访问：http://192.168.1.201:50070
 	NameNode 'weekend01:9000' (standby)
 
-#### 验证YARN：
+##### 验证YARN：
 	运行一下hadoop提供的demo中的WordCount程序：
 	hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.4.1.jar wordcount /profile /out			
 		
-#### 测试集群工作状态的一些指令 ：
+##### 测试集群工作状态的一些指令 ：
     bin/hdfs dfsadmin -report	 查看hdfs的各节点状态信息
     bin/hdfs haadmin -getServiceState nn1		 获取一个namenode节点的HA状态
     sbin/hadoop-daemon.sh start namenode  单独启动一个namenode进程
     ./hadoop-daemon.sh start zkfc   单独启动一个zkfc进程
  
  
-#### 参考
+##### 参考
     https://blog.csdn.net/hyx1990/article/details/51448514
     https://www.cnblogs.com/julyme/p/5196797.html
     https://www.cnblogs.com/runnerjack/p/7454968.html
-`
- 
+    
+    
+## 四、 源码解读
+
+### 1. RPC机制
+服务端： 
+Server
+  Listener 服务端监听，初始化几个Reader
+  Reader   负责和客户端建立连接，读取数据，并封装成Call请求并添加到callQueue队列
+  Handler  从callQueue队列弹出一个Call(客户端请求数据)
+  Call     客户端请求数据
+  Connection 客户端连接
+Client
+  WritableRpcEngine.Invoker实现了JDK的InvocationHandler，所以当调用远程方法时会被此对象拦截
+  客户端是通过Socket和服务端建立连接的，通过ProtoBuf序列化请求并发送
  
