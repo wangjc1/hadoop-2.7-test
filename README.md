@@ -15,7 +15,8 @@ Windows系统下，如果想要整体编译，那么需要安装以下组件
 整体编译需要安装的组件太多了，我这里就像分析下代码，所以就采取了简单的编译策略，只编译Protoc序列化文件，不编译c代码
 * JDK 1.7+
 * Maven 3.0 or later
-* protoc-2.5.0-win32.zip(解压后将protoc.exe文件拷贝到java环境的bin下，或者配置到path环境变量中)
+* protoc-2.5.0-win32.zip(解压后将protoc.exe文件拷贝到java环境的bin下，或者配置到path环境变量中),命令：
+  protoc --proto_path=[.proto文件所在目录] --java_out=[输出目录] ..\RpcHeader.proto
 * 注释掉所有pom.xml中 maven-antrun-plugin插件中涉及到编译c语言代码的配置
 * Maven镜像最好用中心库，否则有一些test-jar无法下载
  ###### hadoop-hdfs中pom.xml这个插件注释掉，注释的时候要注意，他有多个编译目标，注释掉默认的即可
