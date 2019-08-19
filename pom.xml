@@ -8,6 +8,12 @@
     <artifactId>hadoop-2.7-test</artifactId>
     <version>2.7.7</version>
 
+    <properties>
+        <protobuf.version>2.5.0</protobuf.version>
+        <!--If HADOOP_PROTOC_PATH is not exist,protoc is looked up in the PATH -->
+        <!--<protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>-->
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -26,6 +32,7 @@
             <artifactId>hadoop-common</artifactId>
             <version> ${project.version}</version>
         </dependency>
+
         <!--
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -103,12 +110,41 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-maven-plugins</artifactId>
+                <version> ${project.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile-protoc</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>protoc</goal>
+                        </goals>
+                        <configuration>
+                            <protocVersion>${protobuf.version}</protocVersion>
+                            <!--<protocCommand>${protoc.path}</protocCommand>-->
+                            <source>
+                                <directory>${basedir}/src/main/proto</directory>
+                                <includes>
+                                    <include>RpcHeader.proto</include>
+                                </includes>
+                            </source>
+                            <output>${user.dir}/hadoop-protoc/src/main/java/com/appach/hadoop/proto</output>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
+
+
 
 </project>
